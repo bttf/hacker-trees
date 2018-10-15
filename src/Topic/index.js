@@ -1,7 +1,31 @@
 import React from 'react';
 import cx from 'classnames';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import TopicLocalState from './topicLocalState';
+
+const MAX_LEVELS_DEEP = 6;
+
+const Header = styled.div`
+cursor: ${props => !!props.onClick ? 'pointer' : 'normal'};
+
+padding: 0 8px;
+background-color: #F8F8F8;
+border-radius: 4px;
+
+display: flex;
+align-items: center;
+
+min-height: 24px;
+
+&:hover {
+  background-color: #FAFAFA;
+}
+`;
+
+const Expander = styled.button`
+cursor: pointer;
+margin-right: 8px;
+`;
 
 class Topic extends React.Component {
   constructor(props) {
@@ -27,8 +51,6 @@ class Topic extends React.Component {
 
   onSelectTopic = () => {
     const { topic, parentTopic, onSelectTopic } = this.props;
-    console.log('DEBUG topic', topic);
-    console.log('DEBUG parentTopic', parentTopic);
     onSelectTopic({
       topic,
       parentTopic,
@@ -42,20 +64,18 @@ class Topic extends React.Component {
     const { collapsed } = this.state;
     return (
       <li className={className}>
-        <div className="expander"
-            onClick={this.toggleCollapse}
-        >
-          <button
-          >
-            {this.state.collapsed ? '+' : '-'}
-          </button>
-        </div>
-
-        {title && (
-          <div className="title">
-            {title}
-          </div>
-        )}
+        <Header onClick={kids ? this.toggleCollapse : null}>
+          {kids && (
+            <Expander onClick={this.toggleCollapse}>
+              {collapsed ? '+' : '-'}
+            </Expander>
+          )}
+          {title && (
+            <div className="title">
+              {title}
+            </div>
+          )}
+        </Header>
 
         {text && (
           <div className={cx('text', { collapsed })}>
@@ -67,7 +87,7 @@ class Topic extends React.Component {
           <sub>{by} {descendants && `| ${descendants} replies`}</sub>
         </div>
 
-        {kids && !collapsed && this.props.level < 2 && (
+        {kids && !collapsed && this.props.level < MAX_LEVELS_DEEP && (
           <ul>
             {kids.map(kid => (
               <StyledTopic
@@ -80,7 +100,7 @@ class Topic extends React.Component {
           </ul>
         )}
 
-        {kids && this.props.level >= 2 && (
+        {kids && this.props.level >= MAX_LEVELS_DEEP && (
           <div className="show-more">
             <button onClick={this.onSelectTopic}>Show more...</button>
           </div>
